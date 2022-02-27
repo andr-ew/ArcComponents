@@ -1,5 +1,5 @@
 # ArcComponents
-SuperCollider UI components for monome arc
+simple SuperCollider UI components for monome arc. great for prototypes & tests.
 
 for use with the [MonoM](https://github.com/catfact/monom) library. see the [SC grid studies](https://monome.org/docs/grid/studies/sc/).
 
