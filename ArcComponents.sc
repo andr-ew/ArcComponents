@@ -7,7 +7,7 @@ ArcNumberComponent {
     var <>func;
     var <>brightness = 15;
 
-    *new { | arcDevice, enc = 0, sens = 1, clamp = true, func |
+    *new { | arcDevice, enc = 0, sens = 2, clamp = true, func |
         ^super.new.init(arcDevice, enc, sens, clamp, func)
     }
 
@@ -37,6 +37,61 @@ ArcNumberComponent {
 
             func.value(val, dScaled);
             this.redraw();
+        });
+    }
+
+    val_ { | newVal |
+        val = newVal;
+        this.redraw();
+    }
+}
+
+ArcOptionComponent {
+    var <>arcDevice;
+    var <val = 0;
+    var <enc;
+    var <>sens;
+    var <>count;
+    var <>func;
+    var <>brightness = 15;
+
+    *new { | arcDevice, enc = 0, sens = 4, count = 5, func |
+        ^super.new.init(arcDevice, enc, sens, count, func)
+    }
+
+    init { | arcDevice_, enc_, sens_, count_, func_ |
+        arcDevice = arcDevice_;
+        enc = enc_;
+        sens = sens_;
+        count = count_;
+        func = func_;
+    }
+
+    redraw {
+        var min = ((64 * 3/4 * 2) - count/2).floor + 1;
+        var max = ((64 * 3/4 * 2) + count/2).floor;
+
+        arcDevice.ringall(enc, 0);
+
+        arcDevice.ringrange(enc, min % 64, max % 64, 4);
+        arcDevice.ringset(enc, (val.floor + min) % 64, brightness);
+    }
+
+    delta { | n, d |
+        if(n == enc, {
+            var max = count - 1;
+            var dScaled = (d * (1/sens));
+            var lastVal = val;
+
+            val = val + dScaled;
+
+            if(val > max, { val = max });
+            if(val < 0, { val = 0 });
+
+            if((val == val.floor) && (val != lastVal), {
+                func.value(val, dScaled);
+                this.redraw();
+            });
         });
     }
 
@@ -76,6 +131,16 @@ ArcComponents {
 
         components[enc].redraw;
     }
+
+    option { | enc, sens, count, func |
+        components.put(
+            enc,
+            ArcOptionComponent.new(arcDevice, enc, sens, count, func)
+        );
+
+        components[enc].redraw;
+    }
+
 
     setAt { | enc, newVal |
         components[enc].val = newVal;
